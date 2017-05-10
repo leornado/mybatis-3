@@ -24,7 +24,7 @@
   </parent>
 
   <artifactId>mybatis</artifactId>
-  <version>3.2.8</version>
+  <version>3.2.8.1</version>
   <packaging>jar</packaging>
 
   <name>MyBatis</name>
@@ -104,14 +104,14 @@
   </contributors>
 
   <scm>
-    <url>http://github.com/mybatis/mybatis-3</url>
-    <connection>scm:git:ssh://github.com/mybatis/mybatis-3.git</connection>
-    <developerConnection>scm:git:git+ssh://git@github.com/mybatis/mybatis-3.git</developerConnection>
-    <tag>mybatis-3.2.8</tag>
+    <url>https://github.com/leornado/mybatis-3</url>
+    <connection>scm:git:ssh://github.com/leornado/mybatis-3.git</connection>
+    <developerConnection>scm:git:git+ssh://git@github.com/leornado/mybatis-3.git</developerConnection>
+    <tag>mybatis-3.2.8.1</tag>
   </scm>
   <issueManagement>
     <system>GitHub Issue Management</system>
-    <url>https://github.com/mybatis/mybatis-3/issues</url>
+    <url>https://github.com/leornado/mybatis-3/issues</url>
   </issueManagement>
   <ciManagement>
     <system>Travis CI</system>
@@ -120,8 +120,16 @@
   <distributionManagement>
     <site>
       <id>github</id>
-      <url>gitsite:git@github.com/mybatis/mybatis-3.git</url>
+      <url>gitsite:git@github.com/leornado/mybatis-3.git</url>
     </site>
+    <repository>
+      <id>wonders-digital-releases</id>
+      <url>http://nexus.digital.wondersgroup.com:18081/nexus/content/repositories/wonders-digital-releases</url>
+    </repository>
+    <snapshotRepository>
+      <id>wonders-digital-snapshots</id>
+      <url>http://nexus.digital.wondersgroup.com:18081/nexus/content/repositories/wonders-digital-snapshots</url>
+    </snapshotRepository>
   </distributionManagement>
 
   <properties>
@@ -313,6 +321,32 @@
         <configuration>
           <forkMode>pertest</forkMode>
         </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-source-plugin</artifactId>
+        <version>2.1.2</version>
+        <executions>
+          <execution>
+            <id>attach-sources</id>
+            <goals>
+              <goal>jar-no-fork</goal>
+            </goals>
+            <configuration>
+              <archive>
+                <manifest>
+                  <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+                  <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
+                </manifest>
+                <manifestEntries>
+                  <Implementation-Build-Date>${maven.build.timestamp}</Implementation-Build-Date>
+                  <X-Compile-Source-JDK>${javac.src.version}</X-Compile-Source-JDK>
+                  <X-Compile-Target-JDK>${javac.target.version}</X-Compile-Target-JDK>
+                </manifestEntries>
+              </archive>
+            </configuration>
+          </execution>
+        </executions>
       </plugin>
     </plugins>
     <resources>
