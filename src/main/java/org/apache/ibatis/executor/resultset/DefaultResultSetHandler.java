@@ -838,6 +838,9 @@ public class DefaultResultSetHandler implements ResultSetHandler {
     private GenericTokenParser newGenericTokenParser() {
         DynamicContext context = new DynamicContext(configuration,
                 parameterHandler == null ? null : parameterHandler.getParameterObject());
+        if (boundSql != null && boundSql.getAdditionalParameters() != null)
+            for (Map.Entry<String, Object> entry : boundSql.getAdditionalParameters().entrySet())
+                context.bind(entry.getKey(), entry.getValue());
         return new GenericTokenParser("${", "}", new BindingTokenParser(context));
     }
 

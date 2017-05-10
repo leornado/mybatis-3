@@ -23,6 +23,7 @@ import org.apache.ibatis.session.Configuration;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 
 /**
  * @author Clinton Begin
@@ -35,6 +36,22 @@ public class DynamicContext {
             bindings = new ContextMap(metaObject);
         } else {
             bindings = new ContextMap(null);
+        }
+
+        Properties variables = configuration.getVariables();
+        if (variables != null) {
+            for (Map.Entry<Object, Object> entry : variables.entrySet()) {
+                Object key = entry.getKey();
+                if (key == null) continue;
+
+                if (parameterObject instanceof Map) {
+                    if (!((Map) parameterObject).containsKey(String.valueOf(key)))
+                        ((Map) parameterObject).put(String.valueOf(key), entry.getValue());
+                } else {
+                    if (!bindings.containsKey(String.valueOf(key)))
+                        bindings.put(String.valueOf(key), entry.getValue());
+                }
+            }
         }
         bindings.put(PARAMETER_OBJECT_KEY, parameterObject);
         bindings.put(DATABASE_ID_KEY, configuration.getDatabaseId());
@@ -90,12 +107,16 @@ public class DynamicContext {
             }
 
             Object parameterObject = map.get(PARAMETER_OBJECT_KEY);
+            Object variables = map.get(VARIABLES_KEY);
             if (parameterObject instanceof Map) {
-                result = ((Map) parameterObject).get(name);
-                if(result != null) return result;
+                Map m = (Map) parameterObject;
+                if (!m.containsKey(name) && !(variables instanceof Map) && !((Map) variables).containsKey(m))
+                    return null;
+
+                result = m.get(name);
+                if (result != null) return result;
             }
 
-            Object variables = map.get(VARIABLES_KEY);
             if (variables instanceof Map) {
                 return ((Map) variables).get(name);
             }
