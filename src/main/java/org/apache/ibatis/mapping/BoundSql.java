@@ -36,6 +36,12 @@ import java.util.Map;
  */
 public class BoundSql {
 
+    private String sql;
+    private List<ParameterMapping> parameterMappings;
+    private Object parameterObject;
+    private Map<String, Object> additionalParameters;
+    private MetaObject metaParameters;
+
     public BoundSql(Configuration configuration, String sql, List<ParameterMapping> parameterMappings, Object parameterObject) {
         this.sql = sql;
         this.parameterMappings = parameterMappings;
@@ -44,16 +50,8 @@ public class BoundSql {
         this.metaParameters = configuration.newMetaObject(additionalParameters);
     }
 
-    public Object getAdditionalParameter(String name) {
-        return metaParameters.getValue(name);
-    }
-
-    public Map<String, Object> getAdditionalParameters() {
-        return additionalParameters;
-    }
-
-    public MetaObject getMetaParameters() {
-        return metaParameters;
+    public String getSql() {
+        return sql;
     }
 
     public List<ParameterMapping> getParameterMappings() {
@@ -64,16 +62,20 @@ public class BoundSql {
         return parameterObject;
     }
 
-    public String getSql() {
-        return sql;
-    }
-
     public boolean hasAdditionalParameter(String name) {
         return metaParameters.hasGetter(name);
     }
 
     public void setAdditionalParameter(String name, Object value) {
         metaParameters.setValue(name, value);
+    }
+
+    public Object getAdditionalParameter(String name) {
+        return metaParameters.getValue(name);
+    }
+
+    public Map<String, Object> getAdditionalParameters() {
+        return additionalParameters;
     }
 
     public BoundSql setAdditionalParameters(Map<String, Object> additionalParameters) {
@@ -86,14 +88,8 @@ public class BoundSql {
         return this;
     }
 
-    private List<ParameterMapping> parameterMappings;
-
-    private Map<String, Object> additionalParameters;
-
-    private MetaObject metaParameters;
-
-    private Object parameterObject;
-
-    private String sql;
+    public MetaObject getMetaParameters() {
+        return metaParameters;
+    }
 
 }

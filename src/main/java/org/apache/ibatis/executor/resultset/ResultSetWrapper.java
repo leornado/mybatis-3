@@ -31,6 +31,16 @@ import java.util.*;
  */
 class ResultSetWrapper {
 
+    private final ResultSet resultSet;
+    private final TypeHandlerRegistry typeHandlerRegistry;
+    private final List<String> columnNames = new ArrayList<String>();
+    private final List<String> classNames = new ArrayList<String>();
+    private final List<JdbcType> jdbcTypes = new ArrayList<JdbcType>();
+    private final Map<String, Map<Class<?>, TypeHandler<?>>> typeHandlerMap = new HashMap<String, Map<Class<?>, TypeHandler<?>>>();
+    private Map<String, List<String>> mappedColumnNamesMap = new HashMap<String, List<String>>();
+    private Map<String, List<String>> unMappedColumnNamesMap = new HashMap<String, List<String>>();
+    private GenericTokenParser tokenParser;
+
     public ResultSetWrapper(ResultSet rs, Configuration configuration, GenericTokenParser tokenParser) throws SQLException {
         super();
         this.typeHandlerRegistry = configuration.getTypeHandlerRegistry();
@@ -45,25 +55,12 @@ class ResultSetWrapper {
         this.tokenParser = tokenParser;
     }
 
-    public List<String> getColumnNames() {
-        return this.columnNames;
-    }
-
-    public List<String> getMappedColumnNames(ResultMap resultMap, String columnPrefix) throws SQLException {
-        List<String> mappedColumnNames = mappedColumnNamesMap.get(getMapKey(resultMap, columnPrefix));
-        if (mappedColumnNames == null) {
-            loadMappedAndUnmappedColumnNames(resultMap, columnPrefix);
-            mappedColumnNames = mappedColumnNamesMap.get(getMapKey(resultMap, columnPrefix));
-        }
-        return mappedColumnNames;
-    }
-
     public ResultSet getResultSet() {
         return resultSet;
     }
 
-    public GenericTokenParser getTokenParser() {
-        return tokenParser;
+    public List<String> getColumnNames() {
+        return this.columnNames;
     }
 
     /**
@@ -108,22 +105,13 @@ class ResultSetWrapper {
         return handler;
     }
 
-    public List<String> getUnmappedColumnNames(ResultMap resultMap, String columnPrefix) throws SQLException {
-        List<String> unMappedColumnNames = unMappedColumnNamesMap.get(getMapKey(resultMap, columnPrefix));
-        if (unMappedColumnNames == null) {
-            loadMappedAndUnmappedColumnNames(resultMap, columnPrefix);
-            unMappedColumnNames = unMappedColumnNamesMap.get(getMapKey(resultMap, columnPrefix));
+    private Class<?> resolveClass(String className) {
+        try {
+            final Class<?> clazz = Resources.classForName(className);
+            return clazz;
+        } catch (ClassNotFoundException e) {
+            return null;
         }
-        return unMappedColumnNames;
-    }
-
-    public ResultSetWrapper setTokenParser(GenericTokenParser tokenParser) {
-        this.tokenParser = tokenParser;
-        return this;
-    }
-
-    private String getMapKey(ResultMap resultMap, String columnPrefix) {
-        return resultMap.getId() + ":" + columnPrefix;
     }
 
     private void loadMappedAndUnmappedColumnNames(ResultMap resultMap, String columnPrefix) throws SQLException {
@@ -144,6 +132,28 @@ class ResultSetWrapper {
         unMappedColumnNamesMap.put(getMapKey(resultMap, columnPrefix), unmappedColumnNames);
     }
 
+    public List<String> getMappedColumnNames(ResultMap resultMap, String columnPrefix) throws SQLException {
+        List<String> mappedColumnNames = mappedColumnNamesMap.get(getMapKey(resultMap, columnPrefix));
+        if (mappedColumnNames == null) {
+            loadMappedAndUnmappedColumnNames(resultMap, columnPrefix);
+            mappedColumnNames = mappedColumnNamesMap.get(getMapKey(resultMap, columnPrefix));
+        }
+        return mappedColumnNames;
+    }
+
+    public List<String> getUnmappedColumnNames(ResultMap resultMap, String columnPrefix) throws SQLException {
+        List<String> unMappedColumnNames = unMappedColumnNamesMap.get(getMapKey(resultMap, columnPrefix));
+        if (unMappedColumnNames == null) {
+            loadMappedAndUnmappedColumnNames(resultMap, columnPrefix);
+            unMappedColumnNames = unMappedColumnNamesMap.get(getMapKey(resultMap, columnPrefix));
+        }
+        return unMappedColumnNames;
+    }
+
+    private String getMapKey(ResultMap resultMap, String columnPrefix) {
+        return resultMap.getId() + ":" + columnPrefix;
+    }
+
     private Set<String> prependPrefixes(Set<String> columnNames, String prefix, Map<String, String> rawColMapper) {
         if (columnNames == null || columnNames.isEmpty()) {
             return columnNames;
@@ -160,13 +170,8 @@ class ResultSetWrapper {
         return prefixed;
     }
 
-    private Class<?> resolveClass(String className) {
-        try {
-            final Class<?> clazz = Resources.classForName(className);
-            return clazz;
-        } catch (ClassNotFoundException e) {
-            return null;
-        }
+    public GenericTokenParser getTokenParser() {
+        return tokenParser;
     }
 
     private String tryParseDynamicColumnName(String col) {
@@ -175,22 +180,9 @@ class ResultSetWrapper {
         return col.toUpperCase(Locale.ENGLISH);
     }
 
-    private GenericTokenParser tokenParser;
-
-    private Map<String, List<String>> mappedColumnNamesMap = new HashMap<String, List<String>>();
-
-    private Map<String, List<String>> unMappedColumnNamesMap = new HashMap<String, List<String>>();
-
-    private final List<JdbcType> jdbcTypes = new ArrayList<JdbcType>();
-
-    private final List<String> classNames = new ArrayList<String>();
-
-    private final List<String> columnNames = new ArrayList<String>();
-
-    private final Map<String, Map<Class<?>, TypeHandler<?>>> typeHandlerMap = new HashMap<String, Map<Class<?>, TypeHandler<?>>>();
-
-    private final ResultSet resultSet;
-
-    private final TypeHandlerRegistry typeHandlerRegistry;
+    public ResultSetWrapper setTokenParser(GenericTokenParser tokenParser) {
+        this.tokenParser = tokenParser;
+        return this;
+    }
 
 }

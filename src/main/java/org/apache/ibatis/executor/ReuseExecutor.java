@@ -25,6 +25,7 @@ import java.util.Map;
 
 import org.apache.ibatis.executor.statement.StatementHandler;
 import org.apache.ibatis.logging.Log;
+import org.apache.ibatis.logging.jdbc.CachedSqlLogger;
 import org.apache.ibatis.mapping.BoundSql;
 import org.apache.ibatis.mapping.MappedStatement;
 import org.apache.ibatis.session.Configuration;
@@ -71,6 +72,7 @@ public class ReuseExecutor extends BaseExecutor {
     String sql = boundSql.getSql();
     if (hasStatementFor(sql)) {
       stmt = getStatement(sql);
+      new CachedSqlLogger(statementLog, queryStack).debugCachedSql(sql);
     } else {
       Connection connection = getConnection(statementLog);
       stmt = handler.prepare(connection);

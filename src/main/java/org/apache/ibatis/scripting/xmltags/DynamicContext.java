@@ -30,6 +30,18 @@ import java.util.Properties;
  */
 public class DynamicContext {
 
+    public static final String VARIABLES_KEY = "_variables";
+    public static final String PARAMETER_OBJECT_KEY = "_parameter";
+    public static final String DATABASE_ID_KEY = "_databaseId";
+
+    static {
+        OgnlRuntime.setPropertyAccessor(ContextMap.class, new ContextAccessor());
+    }
+
+    private final ContextMap bindings;
+    private final StringBuilder sqlBuilder = new StringBuilder();
+    private int uniqueNumber = 0;
+
     public DynamicContext(Configuration configuration, Object parameterObject) {
         if (parameterObject != null && !(parameterObject instanceof Map)) {
             MetaObject metaObject = configuration.newMetaObject(parameterObject);
@@ -58,17 +70,17 @@ public class DynamicContext {
         bindings.put(VARIABLES_KEY, configuration.getVariables());
     }
 
-    public void appendSql(String sql) {
-        sqlBuilder.append(sql);
-        sqlBuilder.append(" ");
+    public Map<String, Object> getBindings() {
+        return bindings;
     }
 
     public void bind(String name, Object value) {
         bindings.put(name, value);
     }
 
-    public Map<String, Object> getBindings() {
-        return bindings;
+    public void appendSql(String sql) {
+        sqlBuilder.append(sql);
+        sqlBuilder.append(" ");
     }
 
     public String getSql() {
@@ -79,20 +91,40 @@ public class DynamicContext {
         return uniqueNumber++;
     }
 
-    private int uniqueNumber = 0;
+    static class ContextMap extends HashMap<String, Object> {
 
-    public static final String DATABASE_ID_KEY = "_databaseId";
+        private static final long serialVersionUID = 2977601501966151582L;
+        private MetaObject parameterMetaObject;
 
-    public static final String PARAMETER_OBJECT_KEY = "_parameter";
+        public ContextMap(MetaObject parameterMetaObject) {
+            this.parameterMetaObject = parameterMetaObject;
+        }
 
-    public static final String VARIABLES_KEY = "_variables";
+        @Override
+        public Object put(String key, Object value) {
+            return super.put(key, value);
+        }
 
-    private final ContextMap bindings;
+        @Override
+        public Object get(Object key) {
+            String strKey = (String) key;
+            if (super.containsKey(strKey)) {
+                return super.get(strKey);
+            }
 
-    private final StringBuilder sqlBuilder = new StringBuilder();
+            if (parameterMetaObject != null) {
+                Object object = parameterMetaObject.getValue(strKey);
+                // issue #61 do not modify the context when reading
+//        if (object != null) { 
+//          super.put(strKey, object);
+//        }
 
-    static {
-        OgnlRuntime.setPropertyAccessor(ContextMap.class, new ContextAccessor());
+                return object;
+            }
+
+            return null;
+        }
+
     }
 
     static class ContextAccessor implements PropertyAccessor {
@@ -129,43 +161,6 @@ public class DynamicContext {
             Map map = (Map) target;
             map.put(name, value);
         }
-
-    }
-
-    static class ContextMap extends HashMap<String, Object> {
-
-        public ContextMap(MetaObject parameterMetaObject) {
-            this.parameterMetaObject = parameterMetaObject;
-        }
-
-        @Override
-        public Object get(Object key) {
-            String strKey = (String) key;
-            if (super.containsKey(strKey)) {
-                return super.get(strKey);
-            }
-
-            if (parameterMetaObject != null) {
-                Object object = parameterMetaObject.getValue(strKey);
-                // issue #61 do not modify the context when reading
-//        if (object != null) { 
-//          super.put(strKey, object);
-//        }
-
-                return object;
-            }
-
-            return null;
-        }
-
-        @Override
-        public Object put(String key, Object value) {
-            return super.put(key, value);
-        }
-
-        private MetaObject parameterMetaObject;
-
-        private static final long serialVersionUID = 2977601501966151582L;
 
     }
 

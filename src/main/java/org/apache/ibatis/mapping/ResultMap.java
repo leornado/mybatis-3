@@ -24,91 +24,24 @@ import java.util.*;
  */
 public class ResultMap {
 
+    private String id;
+    private Class<?> type;
+    private List<ResultMapping> resultMappings;
+    private List<ResultMapping> idResultMappings;
+    private List<ResultMapping> constructorResultMappings;
+    private List<ResultMapping> propertyResultMappings;
+    private Set<String> mappedColumns;
+    private Discriminator discriminator;
+    private boolean hasNestedResultMaps;
+    private boolean hasNestedQueries;
+    private Boolean autoMapping;
+    private Map<String, String> mappedRawColumnsMapper;
+
     private ResultMap() {
     }
 
-    public void forceNestedResultMaps() {
-        hasNestedResultMaps = true;
-    }
-
-    public Boolean getAutoMapping() {
-        return autoMapping;
-    }
-
-    public List<ResultMapping> getConstructorResultMappings() {
-        return constructorResultMappings;
-    }
-
-    public Discriminator getDiscriminator() {
-        return discriminator;
-    }
-
-    public String getId() {
-        return id;
-    }
-
-    public List<ResultMapping> getIdResultMappings() {
-        return idResultMappings;
-    }
-
-    public Set<String> getMappedColumns() {
-        return mappedColumns;
-    }
-
-    public Map<String, String> getMappedRawColumnsMapper() {
-        return mappedRawColumnsMapper;
-    }
-
-    public List<ResultMapping> getPropertyResultMappings() {
-        return propertyResultMappings;
-    }
-
-    public List<ResultMapping> getResultMappings() {
-        return resultMappings;
-    }
-
-    public Class<?> getType() {
-        return type;
-    }
-
-    public boolean hasNestedQueries() {
-        return hasNestedQueries;
-    }
-
-    public boolean hasNestedResultMaps() {
-        return hasNestedResultMaps;
-    }
-
-    public ResultMap setMappedRawColumnsMapper(Map<String, String> mappedRawColumnsMapper) {
-        this.mappedRawColumnsMapper = mappedRawColumnsMapper;
-        return this;
-    }
-
-    private Boolean autoMapping;
-
-    private Class<?> type;
-
-    private Discriminator discriminator;
-
-    private List<ResultMapping> constructorResultMappings;
-
-    private List<ResultMapping> idResultMappings;
-
-    private List<ResultMapping> propertyResultMappings;
-
-    private List<ResultMapping> resultMappings;
-
-    private Map<String, String> mappedRawColumnsMapper;
-
-    private Set<String> mappedColumns;
-
-    private String id;
-
-    private boolean hasNestedQueries;
-
-    private boolean hasNestedResultMaps;
-
     public static class Builder {
+        private ResultMap resultMap = new ResultMap();
 
         public Builder(Configuration configuration, String id, Class<?> type, List<ResultMapping> resultMappings) {
             this(configuration, id, type, resultMappings, null);
@@ -119,6 +52,15 @@ public class ResultMap {
             resultMap.type = type;
             resultMap.resultMappings = resultMappings;
             resultMap.autoMapping = autoMapping;
+        }
+
+        public Builder discriminator(Discriminator discriminator) {
+            resultMap.discriminator = discriminator;
+            return this;
+        }
+
+        public Class<?> type() {
+            return resultMap.type;
         }
 
         public ResultMap build() {
@@ -169,17 +111,63 @@ public class ResultMap {
             return resultMap;
         }
 
-        public Builder discriminator(Discriminator discriminator) {
-            resultMap.discriminator = discriminator;
-            return this;
-        }
+    }
 
-        public Class<?> type() {
-            return resultMap.type;
-        }
+    public String getId() {
+        return id;
+    }
 
-        private ResultMap resultMap = new ResultMap();
+    public boolean hasNestedResultMaps() {
+        return hasNestedResultMaps;
+    }
 
+    public boolean hasNestedQueries() {
+        return hasNestedQueries;
+    }
+
+    public Class<?> getType() {
+        return type;
+    }
+
+    public List<ResultMapping> getResultMappings() {
+        return resultMappings;
+    }
+
+    public List<ResultMapping> getConstructorResultMappings() {
+        return constructorResultMappings;
+    }
+
+    public List<ResultMapping> getPropertyResultMappings() {
+        return propertyResultMappings;
+    }
+
+    public List<ResultMapping> getIdResultMappings() {
+        return idResultMappings;
+    }
+
+    public Set<String> getMappedColumns() {
+        return mappedColumns;
+    }
+
+    public Discriminator getDiscriminator() {
+        return discriminator;
+    }
+
+    public void forceNestedResultMaps() {
+        hasNestedResultMaps = true;
+    }
+
+    public Boolean getAutoMapping() {
+        return autoMapping;
+    }
+
+    public Map<String, String> getMappedRawColumnsMapper() {
+        return mappedRawColumnsMapper;
+    }
+
+    public ResultMap setMappedRawColumnsMapper(Map<String, String> mappedRawColumnsMapper) {
+        this.mappedRawColumnsMapper = mappedRawColumnsMapper;
+        return this;
     }
 
 }
