@@ -18,7 +18,7 @@ public class CachedSqlLogger extends BaseJdbcLogger {
     }
 
     public void debugCachedSql(String sql) {
-        debug(" Cached Sql: " + removeBreakingWhitespace(sql), true);
+        if (isDebugEnabled()) debug(" Cached Sql: " + removeBreakingWhitespace(sql), true);
     }
 
 }
